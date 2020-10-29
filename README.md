@@ -4,8 +4,7 @@ Licensed under the terms of the Apache 2.0 license.
 Please see LICENSE file in the project root for terms.
 -->
 # TensorSparkML
-> _TensorSparkML brings scalable deep learning to Apache Hadoop and Apache Spark
-clusters._
+> _TensorSparkML brings scalable in-memory machine learning to TensorFlow on Apache Spark clusters._
 
 [![Build Status](https://travis-ci.org/yahoo/TensorFlowOnSpark.svg?branch=master)](https://travis-ci.org/yahoo/TensorFlowOnSpark) [![PyPI version](https://badge.fury.io/py/tensorflowonspark.svg)](https://badge.fury.io/py/tensorflowonspark)
 
@@ -26,12 +25,7 @@ cluster with the following steps:
 
 ## Background
 
-TensorSparkML was developed by Yahoo for large-scale distributed
-deep learning on our Hadoop clusters in Yahoo's private cloud.
-
-TensorSparkML provides some important benefits (see [our
-blog](https://developer.yahoo.com/blogs/157196317141/))
-over alternative deep learning solutions.
+TensorSparkML provides some important benefits over alternative deep learning solutions.
    * Easily migrate existing TensorFlow programs with <10 lines of code change.
    * Support all TensorFlow functionalities: synchronous/asynchronous training, model/data parallelism, inferencing and TensorBoard.
    * Server-to-server direct communication achieves faster learning when available.
