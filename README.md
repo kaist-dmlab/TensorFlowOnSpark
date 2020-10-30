@@ -41,6 +41,70 @@ To use TensorSparkML with an existing TensorFlow application, you can follow our
 
 **Note: since TensorFlow 2.x breaks API compatibility with TensorFlow 1.x, the examples have been updated accordingly.  If you are using TensorFlow 1.x, you will need to checkout the `v1.4.4` tag for compatible examples and instructions.**
 
+
+## How to train mnist example code
+
+### pre-installed
+```
+pip install tensorflow
+pip install tensorflow-datasets
+pip install tensorflowonspark
+pip install pyspark
+wget -q https://www-us.apache.org/dist/spark/spark-3.0.1/spark-3.0.1-bin-hadoop2.7.tgz
+tar xf spark-3.0.1-bin-hadoop2.7.tgz
+```
+
+### training
+
+#### Data setup: spark.InputMode 
+
+you can set `SPARK_WORKER_INSTANCES`, `CORES_PER_WORKER`,`TFoS_HOME`,`SPARK_HOME`.
+
+you can change port number, using `conf spark.ui.port` option.
+
+```
+export SPARK_WORKER_INSTANCES=1
+export CORES_PER_WORKER=1
+export TOTAL_CORES=$((${CORES_PER_WORKER}*${SPARK_WORKER_INSTANCES}))
+export TFoS_HOME=/path/TensorFlowOnSpark
+export SPARK_HOME=/path/spark-3.0.1-bin-hadoop2.7
+
+
+${SPARK_HOME}/sbin/start-master.sh;${SPARK_HOME}/sbin/start-slave.sh -c $CORES_PER_WORKER -m 3G ${MASTER}
+
+# spark.InputMode
+${SPARK_HOME}/bin/spark-submit \
+--jars ${TFoS_HOME}/lib/tensorflow-hadoop-1.0-SNAPSHOT.jar \
+--conf spark.ui.port=4050 \
+${TFoS_HOME}/examples/mnist/mnist_data_setup.py \
+--output ${TFoS_HOME}/data/mnist
+
+#check the data in the dataset
+ls -lR ${TFoS_HOME}/data/mnist/csv
+
+# remove any old artifacts
+rm -rf ${TFoS_HOME}/mnist_model
+rm -rf ${TFoS_HOME}/mnist_export
+```
+
+#### Train
+Caution: when you finish training data, you can't connect spark ui website.
+```
+# train
+${SPARK_HOME}/bin/spark-submit \
+--conf spark.cores.max=${TOTAL_CORES} \
+--conf spark.task.cpus=${CORES_PER_WORKER} \
+${TFoS_HOME}/examples/mnist/keras/mnist_spark.py \
+--cluster_size ${SPARK_WORKER_INSTANCES} \
+--images_labels ${TFoS_HOME}/data/mnist/csv/train \
+--model_dir ${TFoS_HOME}/mnist_model \
+--export_dir ${TFoS_HOME}/mnist_export
+
+# confirm model
+ls -lR ${TFoS_HOME}/mnist_model
+ls -lR ${TFoS_HOME}/mnist_export
+```
+
 ## License
 
 The use and distribution terms for this software are covered by the Apache 2.0 license.
