@@ -41,10 +41,6 @@ To use TensorSparkML with an existing TensorFlow application, you can follow our
 
 **Note: since TensorFlow 2.x breaks API compatibility with TensorFlow 1.x, the examples have been updated accordingly.  If you are using TensorFlow 1.x, you will need to checkout the `v1.4.4` tag for compatible examples and instructions.**
 
-## License
-
-The use and distribution terms for this software are covered by the Apache 2.0 license.
-See [LICENSE](LICENSE) file for terms.
 
 ## How to train mnist example code
 
@@ -109,3 +105,7 @@ ls -lR ${TFoS_HOME}/mnist_model
 ls -lR ${TFoS_HOME}/mnist_export
 ```
 
+## License
+
+The use and distribution terms for this software are covered by the Apache 2.0 license.
+See [LICENSE](LICENSE) file for terms.
