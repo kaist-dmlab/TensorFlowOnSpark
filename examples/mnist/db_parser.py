@@ -25,7 +25,7 @@ class DBParser():
 		# Dealing SELECT Query
 		if self.query[0] == "SELECT":
 			sql_query = " ".join(self.query[:self.get_index("FOR")])
-			sql_query = " ".join(sql_query.split()[:3] + ['temp'] + sql_query.split()[5:])
+			sql_query = " ".join(sql_query.split()[:3] + ['temp'] + sql_query.split()[4:])
 			hdfs_path  = self.query[self.get_index("FROM")+1]
 			task, task_path  = self.query[self.get_index("FOR")+1:]
 			self.db_manager.select(sql_query, hdfs_path, task, task_path)
