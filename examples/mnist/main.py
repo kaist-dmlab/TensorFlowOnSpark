@@ -84,6 +84,7 @@ class DBManager():
         print("data: ", data_rdd.collect()[0])
         print("len(data): ", len(data_rdd.collect()))
 
+        
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
