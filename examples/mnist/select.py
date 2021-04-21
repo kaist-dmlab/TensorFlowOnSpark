@@ -47,8 +47,7 @@ if __name__ == "__main__":
     print("args:", args)
     sql_query = read_query(args.sql_query_path)
 
-    dbp = DBParser()
-    dbm = DBManager()
+    dbp, dbm = DBParser(), DBManager()
 
     # Parse
     sql_query, hdfs_path, task, task_path = dbp.parse(sql_query)
