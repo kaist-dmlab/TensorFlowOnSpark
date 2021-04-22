@@ -1,6 +1,6 @@
 class DBParser():
 	def __init__(self):
-		# print("----------Start DBParser ----------")
+		print("----------Start DBParser ----------")
 		self.query = None
 
 	def split_query(self, query):
@@ -11,7 +11,7 @@ class DBParser():
 
 	def parse(self, query):
 		self.query = self.split_query(query)
-		#print(self.query)
+		print(self.query)
 
 		# Dealing INSERT Query
 		if self.query[0] == "INSERT":
