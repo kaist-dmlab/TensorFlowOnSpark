@@ -21,6 +21,7 @@ import tensorflow_datasets as tfds
 import os 
 os.environ["CUDA_VISIBLE_DEVICES"]=""
 
+
 # TF function to run on Spark
 
 from db_parser import DBParser
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print("args:", args)
     sql_query = read_query(args.sql_query_path)
-
+    
     dbp, dbm = DBParser(), DBManager()
 
     # Parse
