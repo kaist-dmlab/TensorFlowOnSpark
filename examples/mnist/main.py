@@ -24,7 +24,7 @@ from examples.mnist.db_manager import DBManager
 class DBManager():
     
     def __init__(self):
-        print("==========Start DBManager==========")
+#         print("==========Start DBManager==========")
 
     def to_csv(self, example):
         return ','.join([str(i) for i in example.reshape(-1)])
