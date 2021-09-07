@@ -18,7 +18,7 @@ from tensorflowonspark import TFCluster
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-import os
+import os 
 os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 # TF function to run on Spark
