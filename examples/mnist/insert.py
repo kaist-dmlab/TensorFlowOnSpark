@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("--sql_query_path", help="SQL Query", type=str)
 
     args = parser.parse_args()
-    print("args:", args)
+#     print("args:", args)
     sql_query = read_query(args.sql_query_path)
 
     dbp = DBParser()
