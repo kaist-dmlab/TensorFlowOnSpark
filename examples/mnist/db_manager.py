@@ -11,7 +11,7 @@ from tensorflowonspark import TFCluster
 
 class DBManager():
     def __init__(self):
-#         print("==========Start DBManager==========")
+        print("==========Start DBManager==========")
 
     def main_fun(args, ctx):
         import os
