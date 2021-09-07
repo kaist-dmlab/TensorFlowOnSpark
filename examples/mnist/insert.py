@@ -24,6 +24,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]=""
 from db_parser import DBParser
 from db_manager import DBManager
 
+
 def read_query(query_path):
     file = open(query_path, "r")
     query = file.read()
