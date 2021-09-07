@@ -8,6 +8,7 @@ from pyspark.conf import SparkConf
 from pyspark.sql import SparkSession
 from tensorflowonspark import TFCluster
 
+
 class DBManager():
     def __init__(self):
 #         print("==========Start DBManager==========")
