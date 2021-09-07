@@ -23,7 +23,7 @@ from examples.mnist.db_manager import DBManager
 # from DBManager import DBManager
 class DBManager():
     def __init__(self):
-        print("==========Start DBManager==========")
+#         print("==========Start DBManager==========")
 
     def to_csv(self, example):
         return ','.join([str(i) for i in example.reshape(-1)])
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     parser.add_argument("--hdfs_path", help="HDFS directory to save examples in parallelized format", default="data/mnist")
 
     args = parser.parse_args()
-    print("args:", args)
+#     print("args:", args)
 
     dbm = DBManager()
 
