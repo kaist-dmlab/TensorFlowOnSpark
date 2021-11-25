@@ -22,7 +22,7 @@ from examples.mnist.db_manager import DBManager
 
 # from DBManager import DBManager
 class DBManager():
-    
+    """DBManager"""
     def __init__(self):
         print("==========Start DBManager==========")
 
