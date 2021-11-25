@@ -1,6 +1,4 @@
 class DBParser():
-	""""DB Parser"""
-	
 	def __init__(self):
 		print("----------Start DBParser ----------")
 		self.query = None
