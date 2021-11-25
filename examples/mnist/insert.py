@@ -41,8 +41,8 @@ if __name__ == "__main__":
     sql_query = read_query(args.sql_query_path)
     
     # Call DBParser/DBManager
-    dbp = DBParser()
-    dbm = DBManager()
+    dbp, dbm = DBParser(), DBManager()
+     
 
     # Parse
     in_local_path, out_hdfs_path, num_partitions = dbp.parse(sql_query)
