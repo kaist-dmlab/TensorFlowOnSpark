@@ -39,7 +39,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print("args:", args)
     sql_query = read_query(args.sql_query_path)
-
+    
+    # Call DBParser/DBManager
     dbp = DBParser()
     dbm = DBManager()
 
