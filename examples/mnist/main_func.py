@@ -9,7 +9,6 @@ def main_fun(args, ctx):
   strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
   def build_and_compile_cnn_model():
-    
     model = tf.keras.Sequential([
         tf.keras.layers.Conv2D(32, 3, activation='relu', input_shape=(28, 28, 1)),
         tf.keras.layers.MaxPooling2D(),
@@ -30,7 +29,6 @@ def main_fun(args, ctx):
   tf_feed = TFNode.DataFeed(ctx.mgr, False)
 
   def rdd_generator():
-    
     while not tf_feed.should_stop():
       batch = tf_feed.next_batch(1)
       if len(batch) > 0:
