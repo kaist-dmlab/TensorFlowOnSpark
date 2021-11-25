@@ -10,7 +10,7 @@ from tensorflowonspark import TFCluster
 
 
 class DBManager():
-    """DBParser"""
+    """DBManager"""
     def __init__(self):
         print("==========Start DBManager==========")
 
