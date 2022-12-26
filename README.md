@@ -110,3 +110,4 @@ ls -lR ${TFoS_HOME}/mnist_export
 The use and distribution terms for this software are covered by the Apache 2.0 license.
 See [LICENSE](LICENSE) file for terms.
 
+
