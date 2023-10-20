@@ -18,9 +18,8 @@ from tensorflowonspark import TFCluster
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-import os 
+import os
 os.environ["CUDA_VISIBLE_DEVICES"]=""
-
 
 # TF function to run on Spark
 
@@ -47,9 +46,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print("args:", args)
     sql_query = read_query(args.sql_query_path)
-    
-    # Call DBParser/DBManager
-    dbp, dbm = DBParser(), DBManager()
+
+    dbp = DBParser()
+    dbm = DBManager()
 
     # Parse
     sql_query, hdfs_path, task, task_path = dbp.parse(sql_query)

@@ -1,6 +1,6 @@
 class DBParser():
 	def __init__(self):
-		print("----------Start DBParser ----------")
+		print("==========Start DBParser ==========")
 		self.query = None
 
 	def split_query(self, query):
@@ -11,7 +11,7 @@ class DBParser():
 
 	def parse(self, query):
 		self.query = self.split_query(query)
-		print(self.query)
+		#print(self.query)
 
 		# Dealing INSERT Query
 		if self.query[0] == "INSERT":
@@ -20,7 +20,6 @@ class DBParser():
 			num_partitions = self.query[self.get_index("PARTITIONS")+1]
 
 			return in_local_path, out_hdfs_path, num_partitions
-		
 			#self.db_manager.insert(in_local_path, out_hdfs_path, num_partitions)
 
 		# Dealing SELECT Query
@@ -31,5 +30,4 @@ class DBParser():
 			task, task_path  = self.query[self.get_index("FOR")+1:]
 
 			return sql_query, hdfs_path, task, task_path
-		
 			# self.db_manager.select(sql_query, hdfs_path, task, task_path)

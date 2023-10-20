@@ -8,12 +8,11 @@ from pyspark.conf import SparkConf
 from pyspark.sql import SparkSession
 from tensorflowonspark import TFCluster
 
-
 class DBManager():
     def __init__(self):
         print("==========Start DBManager==========")
 
-    def main_fun(args, ctx):
+    def main_fun(self, args, ctx):
         import os
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
         import numpy as np
@@ -75,6 +74,9 @@ class DBManager():
         steps_per_epoch = 60000 / args.batch_size
         steps_per_epoch_per_worker = steps_per_epoch / ctx.num_workers
         max_steps_per_worker = steps_per_epoch_per_worker * 0.9
+        
+        print(steps_per_epoch_per_worker)
+        
 
         multi_worker_model.fit(x=ds, epochs=args.epochs, steps_per_epoch=max_steps_per_worker, callbacks=callbacks)
 
@@ -105,30 +107,35 @@ class DBManager():
         input = np.random.rand(101,3)
         input[0] = np.array([100,200,300])
         input[1] = np.array([10000, 20000, 30000])
-
+        '''
         # FOR TESTING 2
         mnist, info = tfds.load('mnist', with_info=True)
         print("info: ", info.as_json)
         mnist_train = tfds.as_numpy(mnist['train'])
         mnist_test = tfds.as_numpy(mnist['test'])
-        '''
+
+        #print("mnist data shape: ", mnist_train['image'])
+
         time_logs = np.zeros(5)
         time0 = time.time()
 
         print("1. Before read local input csv file")
         time_logs[0] = float(time.time() - time0)
+        print("Time: ", time_logs[0])
 
         input = np.loadtxt(in_local_path, delimiter=',', dtype=str)
-        header = input[0] #np.array(['Y']+['X'+str(i) for i in range(1, 785)]) #for TEST2
-        data = input[1:] #mnist_train
+        header = np.array(['Y']+['X'+str(i) for i in range(1, 785)]) #for TEST2 #input[0]
+        data = mnist_train #input[1:] #
 
         print("2. Before start spark clusters")
         time_logs[1] = float(time.time() - time0)
+        print("Time: ", time_logs[1])
 
         sc = SparkContext(conf=SparkConf().setAppName("data_setup"))
 
         print("3. Before parallerlize")
         time_logs[2] = float(time.time() - time0)
+        print("Time: ", time_logs[2])
 
         # Split Data into Partitions
         header_rdd = sc.parallelize(header, 1).cache()
@@ -136,14 +143,16 @@ class DBManager():
 
         print("4. Before save data on hdfs")
         time_logs[3] = float(time.time() - time0)
+        print("Time: ", time_logs[3])
 
         # Save Data Partitions
         header_rdd.map(self.to_csv).saveAsTextFile(out_hdfs_path+"/csv/header")
-        data_rdd.map(self.to_csv).saveAsTextFile(out_hdfs_path+"/csv/data")
-        #data_rdd.map(self.to_csv_mnist).saveAsTextFile(out_hdfs_path + "/csv/data") #for TEST2
+        #data_rdd.map(self.to_csv).saveAsTextFile(out_hdfs_path+"/csv/data")
+        data_rdd.map(self.to_csv_mnist).saveAsTextFile(out_hdfs_path + "/csv/data") #for TEST2
 
         print("5. After save data on hdfs")
         time_logs[4] = float(time.time() - time0)
+        print("Time: ", time_logs[4])
 
         print("============Finish Insertion============")
         print("Time logs: ", time_logs)
@@ -185,13 +194,14 @@ class DBManager():
 
         # Read Header
         header_rdd = sc.textFile(infile_path + "/header").map(self.parse)
-        header_list = sum(header_rdd.collect(), [])  #Should not have .
+        #header_list = sum(header_rdd.collect(), [])  #Should not have .
         #header_list = ["A", "B", "C"]  # For Test1
-        #header_list = ['Y'] + ['X' + str(i) for i in range(1, 785)]  # For Test2
+        header_list = ['Y'] + ['X' + str(i) for i in range(1, 785)]  # For Test2
         #print("*header_list: ", *header_list)
 
         print("1. Before read hdfs files")
         time_logs[0] = float(time.time() - time0)
+        print("Time: ", time_logs[0])
 
         # 1. Read Data
         data_rdd = sc.textFile(infile_path + "/data").map(self.parse)
@@ -201,6 +211,7 @@ class DBManager():
 
         print("2. Before Do Spark_SQL")
         time_logs[1] = float(time.time() - time0)
+        print("Time: ", time_logs[1])
 
         # 2. Do SQL
         data_df2 = spark.sql(sql_query)
@@ -208,6 +219,7 @@ class DBManager():
 
         print("3. Before Convert DataFrame into RDD([X1,X2,...], Y) ")
         time_logs[2] = float(time.time() - time0)
+        print("Time: ", time_logs[2])
 
         # 3. Preprocessing DF into RDD([X1,X2,...], Y)
         data_rdd3 = data_df2.rdd
@@ -218,16 +230,17 @@ class DBManager():
 
         print("4. Before Training")
         time_logs[3] = float(time.time() - time0)
+        print("Time: ", time_logs[3])
 
         # 4. Train by TFoS
         print("============Start Training============")
-        #self.load_main_func(task_path) #run main_func
-        #from main_func import main_fun
-        cluster = TFCluster.run(sc, self.main_fun, args, args.cluster_size, num_ps=0, tensorboard=args.tensorboard,
-                                input_mode=TFCluster.InputMode.SPARK, master_node='chief')
-        cluster.train(data_rdd3, args.epochs)
+        if task == "classification":
+            from classification import main_fun
+            cluster = TFCluster.run(sc, main_fun, args, args.cluster_size, num_ps=0, tensorboard=args.tensorboard,
+                                    input_mode=TFCluster.InputMode.SPARK, master_node='chief')
+            cluster.train(data_rdd3, args.epochs)
 
-        print("4. After Training")
+        print("5. After Training")
         time_logs[4] = float(time.time() - time0)
 
         cluster.shutdown()
