@@ -103,59 +103,40 @@ class DBManager():
 
     def insert(self, in_local_path, out_hdfs_path, num_partitions=10):
         '''
-        # FOR TESTING 1
+        # FOR TESTING np_array example
         input = np.random.rand(101,3)
-        input[0] = np.array([100,200,300])
-        input[1] = np.array([10000, 20000, 30000])
+        header = np.array([100,200,300])
+        data = np.array([10000, 20000, 30000])
+        
+        input = np.loadtxt(in_local_path, delimiter=',', dtype=str)
+        header = input[0]
+        data = input[1]
         '''
-        # FOR TESTING 2
+        
+        # FOR TESTING mnist example
         mnist, info = tfds.load('mnist', with_info=True)
         print("info: ", info.as_json)
+        
         mnist_train = tfds.as_numpy(mnist['train'])
         mnist_test = tfds.as_numpy(mnist['test'])
+        
+        header = np.array(['Y']+['X'+str(i) for i in range(1, 785)])
+        data = mnist_train
 
-        #print("mnist data shape: ", mnist_train['image'])
-
-        time_logs = np.zeros(5)
-        time0 = time.time()
-
-        print("1. Before read local input csv file")
-        time_logs[0] = float(time.time() - time0)
-        print("Time: ", time_logs[0])
-
-        input = np.loadtxt(in_local_path, delimiter=',', dtype=str)
-        header = np.array(['Y']+['X'+str(i) for i in range(1, 785)]) #for TEST2 #input[0]
-        data = mnist_train #input[1:] #
-
-        print("2. Before start spark clusters")
-        time_logs[1] = float(time.time() - time0)
-        print("Time: ", time_logs[1])
-
+        # Create a Spark Cluster
         sc = SparkContext(conf=SparkConf().setAppName("data_setup"))
-
-        print("3. Before parallerlize")
-        time_logs[2] = float(time.time() - time0)
-        print("Time: ", time_logs[2])
 
         # Split Data into Partitions
         header_rdd = sc.parallelize(header, 1).cache()
         data_rdd = sc.parallelize(data, num_partitions).cache()
 
-        print("4. Before save data on hdfs")
-        time_logs[3] = float(time.time() - time0)
-        print("Time: ", time_logs[3])
-
         # Save Data Partitions
         header_rdd.map(self.to_csv).saveAsTextFile(out_hdfs_path+"/csv/header")
+        
         #data_rdd.map(self.to_csv).saveAsTextFile(out_hdfs_path+"/csv/data")
-        data_rdd.map(self.to_csv_mnist).saveAsTextFile(out_hdfs_path + "/csv/data") #for TEST2
-
-        print("5. After save data on hdfs")
-        time_logs[4] = float(time.time() - time0)
-        print("Time: ", time_logs[4])
+        data_rdd.map(self.to_csv_mnist).saveAsTextFile(out_hdfs_path + "/csv/data") #for mnist-like
 
         print("============Finish Insertion============")
-        print("Time logs: ", time_logs)
 
     def select(self, col_names=None, filepath=None, sampler=None, sampling_rate=1, task="classfication"):
         sc = SparkContext(conf=SparkConf().setAppName("select"))
@@ -189,60 +170,56 @@ class DBManager():
         sc = SparkContext(conf=SparkConf().setAppName("select_sql"))
         spark = SparkSession(sc)
 
-        time_logs = np.zeros(5)
-        time0 = time.time()
-
+        ### 1. Parsing & Preprocessing
+        
         # Read Header
         header_rdd = sc.textFile(infile_path + "/header").map(self.parse)
-        #header_list = sum(header_rdd.collect(), [])  #Should not have .
-        #header_list = ["A", "B", "C"]  # For Test1
-        header_list = ['Y'] + ['X' + str(i) for i in range(1, 785)]  # For Test2
+        #header_list = sum(header_rdd.collect(), [])  # Must not have .
+        #header_list = ["A", "B", "C"]  # For testing a random array
+        header_list = ['Y'] + ['X' + str(i) for i in range(1, 785)]  # For testing mnist
         #print("*header_list: ", *header_list)
 
-        print("1. Before read hdfs files")
-        time_logs[0] = float(time.time() - time0)
-        print("Time: ", time_logs[0])
-
-        # 1. Read Data
+        # Read RDD, and convert it to the dataframe (DF) format
         data_rdd = sc.textFile(infile_path + "/data").map(self.parse)
         data_df = data_rdd.toDF(header_list)
         data_df.createOrReplaceTempView("temp")
         print("data initial: ", data_df.collect()[0])
 
-        print("2. Before Do Spark_SQL")
-        time_logs[1] = float(time.time() - time0)
-        print("Time: ", time_logs[1])
-
-        # 2. Do SQL
+        # Do SQL
         data_df2 = spark.sql(sql_query)
-        #print("data after sql: ", data_df2.collect()[0])
+        print("data after sql: ", data_df2.collect()[0])
 
-        print("3. Before Convert DataFrame into RDD([X1,X2,...], Y) ")
-        time_logs[2] = float(time.time() - time0)
-        print("Time: ", time_logs[2])
-
-        # 3. Preprocessing DF into RDD([X1,X2,...], Y)
+        # Re-convert DF into RDD([X1,X2,...], Y)
         data_rdd3 = data_df2.rdd
         if task == "classification":
             data_rdd3 = data_rdd3.map(lambda vec: (vec[1:], vec[0]))
-        #print("data after preprocessing: ", data_rdd3.collect()[0])
         print("============Finish Selection============")
 
-        print("4. Before Training")
-        time_logs[3] = float(time.time() - time0)
-        print("Time: ", time_logs[3])
 
-        # 4. Train by TFoS
+        ### 2. Run ML Tasks
+
+        # Train by TensorSparkML
         print("============Start Training============")
         if task == "classification":
-            from classification import main_fun
+            from tasks.classification import main_fun
             cluster = TFCluster.run(sc, main_fun, args, args.cluster_size, num_ps=0, tensorboard=args.tensorboard,
                                     input_mode=TFCluster.InputMode.SPARK, master_node='chief')
             cluster.train(data_rdd3, args.epochs)
-
-        print("5. After Training")
-        time_logs[4] = float(time.time() - time0)
+            
+        elif task == "selfie":
+            from tasks.selfie import main_fun
+            # TODO: Youngjun-Joeun
+            print("selfie!")
+        
+        elif task == "embedding":
+            from tasks.embedding import main_fun
+            # TODO: Junhyeok-Minyeong
+            print("embedding!")
+        
+        elif task == "autoML":
+            from tasks.autoML import main_fun
+            # TODO: Patara-Jihye
+            print("autoML!")
 
         cluster.shutdown()
         print("============Finish Training============")
-        print("Time logs: ", time_logs)

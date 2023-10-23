@@ -2,16 +2,24 @@ class DBParser():
 	def __init__(self):
 		print("==========Start DBParser ==========")
 		self.query = None
+  
+	def read_query(self, query_path):
+		file = open(query_path, "r")
+		query = file.read()   
+		print("read query:\n", query)
+		file.close()
+		return query
 
-	def split_query(self, query):
+	def split_query(self, query_path):
+		query = self.read_query(query_path)
 		return query.strip().replace("\n", " ").split()      
 
 	def get_index(self, statement):
 		return self.query.index(statement) if statement in self.query else None
 
-	def parse(self, query):
-		self.query = self.split_query(query)
-		#print(self.query)
+	def parse(self, sql_query_path):
+     	
+		self.query = self.split_query(sql_query_path)
 
 		# Dealing INSERT Query
 		if self.query[0] == "INSERT":
