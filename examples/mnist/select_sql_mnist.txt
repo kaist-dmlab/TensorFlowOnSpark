@@ -1,4 +1,0 @@
-SELECT *
-FROM data/mnist
-WHERE X1 >= 0
-FOR classification main_func.py
