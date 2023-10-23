@@ -6,7 +6,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
+import argparse 
 import numpy as np
 import time
 
@@ -24,6 +24,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]=""
 from db_parser import DBParser
 from db_manager import DBManager
 
+
 def read_query(query_path):
     file = open(query_path, "r")
     query = file.read()
@@ -38,10 +39,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print("args:", args)
     sql_query = read_query(args.sql_query_path)
-
-    dbp = DBParser()
-    dbm = DBManager()
-
+    
+    # Call DBParser/DBManager
+    dbp, dbm = DBParser(), DBManager()
+     
     # Parse
     in_local_path, out_hdfs_path, num_partitions = dbp.parse(sql_query)
 
