@@ -4,22 +4,38 @@ def main_fun(args, ctx):
 
   import numpy as np
   import tensorflow as tf
+
   from tensorflowonspark import compat, TFNode
+
+  # import TimesNAS relevant packages
+  from TimesNAS import searcher, search_configs, search_space
+  from TimesNAS import experiments as exp_setup
+  from TimesNAS.exp.exp_imputation import Exp_Imputation
+  from TimesNAS.exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  from TimesNAS.exp.exp_anomaly_detection import Exp_Anomaly_Detection
+  from TimesNAS.exp.exp_classification import Exp_Classification  
 
   strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
-  def build_and_compile_cnn_model():
-    model = tf.keras.Sequential([
-        tf.keras.layers.Conv2D(32, 3, activation='relu', input_shape=(28, 28, 1)),
-        tf.keras.layers.MaxPooling2D(),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(10, activation='softmax')
-    ])
-    model.compile(
-        loss=tf.keras.losses.sparse_categorical_crossentropy,
-        optimizer=tf.keras.optimizers.SGD(learning_rate=0.001),
-        metrics=['accuracy'])
+  def search_and_compile_model(task_name, data_name):
+    assert task_name in ['forecasting', 'classification', 'anomaly_detection', 'imputation']
+
+    # SETUP SEARCH CONFIGS
+    search_configs.task_name = task_name
+    search_configs.data_name = data_name
+    Exp = {
+      'forecasting': Exp_Long_Term_Forecast,
+      'classification': Exp_Classification,
+      'anomaly_detection': Exp_Anomaly_Detection,
+      'imputation': Exp_Imputation
+    }
+
+    # RUN SEARCH (pytorch model -> onnx -> tf model)
+    model = searcher.run(Exp, search_configs)
+
+    # COMPILE MODEL
+    # model.compile(loss=..., optimizer=..., metrics=[...])
+    
     return model
 
   # single node
