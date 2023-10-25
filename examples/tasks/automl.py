@@ -28,7 +28,7 @@ def main_fun(args, ctx):
       'classification': Exp_Classification,
       'anomaly_detection': Exp_Anomaly_Detection,
       'imputation': Exp_Imputation
-    }
+    }[task_name]
 
     # RUN SEARCH (pytorch model -> onnx -> tf model)
     model = searcher.run(Exp, search_configs)
